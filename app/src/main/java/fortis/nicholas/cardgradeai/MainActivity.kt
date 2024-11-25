@@ -15,10 +15,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        /*
+
+        // Comment out when you want the DB to persist
         lifecycleScope.launch {
             (application as MyApplication).db.uploadDao().deleteAll()
-        } */
+        }
+        //
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNav.setOnItemSelectedListener { item ->
