@@ -6,6 +6,6 @@
         android:icon="@drawable/ic_camera"/>
     <item
         android:id="@+id/nav_recent_upload"
-        android:title="Recent Upload"
+        android:title="Uploads"
         android:icon="@drawable/ic_recent"/>
 </menu>

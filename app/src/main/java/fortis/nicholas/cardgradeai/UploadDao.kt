@@ -9,7 +9,7 @@ interface UploadDao {
     @Insert
     suspend fun insert(upload: Upload)
 
-    @Query("SELECT * FROM uploads")
+    @Query("SELECT * FROM uploads ORDER BY id DESC")
     suspend fun getAllUploads(): List<Upload>
 
     @Query("SELECT * FROM uploads WHERE id = :id LIMIT 1")
@@ -17,4 +17,8 @@ interface UploadDao {
 
     @Query("DELETE FROM uploads")
     suspend fun deleteAll()
+
+    @Query("SELECT * FROM uploads ORDER BY id DESC LIMIT 1")
+    suspend fun getLatestUpload(): Upload
+
 }

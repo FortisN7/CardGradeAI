@@ -1,7 +1,9 @@
 package fortis.nicholas.cardgradeai
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Base64
+import android.graphics.Matrix
+import android.media.ExifInterface
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import java.io.File
 
 class UploadAdapter(
     private val uploads: List<Upload>,
@@ -32,20 +35,52 @@ class UploadAdapter(
         private val responseTextView: TextView = itemView.findViewById(R.id.api_response)
 
         fun bind(upload: Upload) {
-            // Check if imagePath is not null or empty before decoding
             if (!upload.imagePath.isNullOrEmpty()) {
-                val decodedByteArray = Base64.decode(upload.imagePath, Base64.NO_WRAP)
-                val bitmap = BitmapFactory.decodeByteArray(decodedByteArray, 0, decodedByteArray.size)
-                imageView.setImageBitmap(bitmap)
+                val file = File(upload.imagePath)
+                if (file.exists()) {
+                    // Decode and correct image orientation
+                    val correctedBitmap = getCorrectedBitmap(file.absolutePath)
+                    imageView.setImageBitmap(correctedBitmap)
+                } else {
+                    Log.e("UploadAdapter", "Image file does not exist: ${upload.imagePath}")
+                    imageView.setImageResource(R.drawable.ic_placeholder) // Placeholder image
+                }
             } else {
-                // Set a placeholder if image is empty or null
-                Log.e("Oops", "Oops")
+                Log.e("UploadAdapter", "Image path is null or empty")
+                imageView.setImageResource(R.drawable.ic_placeholder)
             }
 
+            // Display API response
             responseTextView.text = upload.apiResponse
 
             itemView.setOnClickListener {
                 onItemClick(upload)
+            }
+        }
+
+        private fun getCorrectedBitmap(imagePath: String): Bitmap {
+            val bitmap = BitmapFactory.decodeFile(imagePath)
+            val exif = ExifInterface(imagePath)
+
+            val orientation = exif.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL
+            )
+            val rotation = when (orientation) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> 90f
+                ExifInterface.ORIENTATION_ROTATE_180 -> 180f
+                ExifInterface.ORIENTATION_ROTATE_270 -> 270f
+                else -> 0f
+            }
+
+            return if (rotation != 0f) {
+                val matrix = Matrix().apply { postRotate(rotation) }
+                Bitmap.createBitmap(
+                    bitmap, 0, 0,
+                    bitmap.width, bitmap.height, matrix, true
+                )
+            } else {
+                bitmap
             }
         }
     }
